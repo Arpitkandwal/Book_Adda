@@ -1,0 +1,69 @@
+<% layout('layouts/Boilerplate')%>
+  <div class="row">
+    <div class="col-6 ">
+      <div class="card mb-3">
+        <div class="embed-respnosive embed-respnosive-4by3">
+          <img src="<%= book.image %>" class="card-img-top embed-respnosive-item" alt="Card image cap">
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">
+            <%= book.title %>
+          </h5>
+          <p class="card-text">
+            <%= book.description %>
+          </p>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">Author- <%= book.author %>
+          </li>
+          <li class="list-group-item">Submitted by- <%= book.user.username %>
+          </li>
+          <li class="list-group-item">Price- $<%= book.price %>
+          </li>
+        </ul>
+        <div class="card-body">
+          <a href="/books/<%=book._id%>/buy" class="card-link"> <button class="btn btn-success">BUY</button> </a>
+          <a href="/books/<%=book._id%>/cart" class="card-link"><button class="btn btn-secondary">Add to
+              Cart</button></a>
+        </div>
+      </div>
+    </div>
+    <div class="col-6">
+      <% if(currentUser){ %>
+        <h2>Reviews</h2>
+        <form class="mb-3 validated-form" action="/books/<%=book._id%>/reviews" method="POST">
+          <div class="mb-3">
+            <label class="form-label" for="rating">Rating</label>
+            <input class="form-range" type="range" min="1" max="5" id="rating" name="review[rating]" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="body">Add a Review</label>
+            <textarea class="form-control" name="review[body]" id="body" cols="30" rows="3" required></textarea>
+          </div>
+          <button class="btn btn-success">Submit</button>
+        </form>
+        <% } %>
+          <% for(let review of book.reviews){%>
+            <div class=" card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Rating: <%= review.rating %>
+                </h5>
+                <h6 class="card-subtitle mb-2 text-muted">By- <%= review.author.username %>
+                </h6>
+                <p class="card-text">Review: <%= review.body %>
+                </p>
+                <% if(currentUser && review.author.equals(currentUser._id)){ %>
+                  <form action="/books/<%=book._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                  <% } %>
+              </div>
+            </div>
+            <% } %>
+    </div>
+  </div>
+  <% if(currentUser && book.user.equals(currentUser._id)){ %>
+    <form action="/books/<%=book._id%>?_method=DELETE" method="POST">
+      <button>Delete</button>
+    </form>
+    <% } %>
