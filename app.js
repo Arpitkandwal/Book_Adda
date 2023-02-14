@@ -4,18 +4,13 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const ejsMate = require('ejs-mate');
 const flash = require('connect-flash');
-const catchAsync = require('./utils/catchAsync');
 const methodOverride = require('method-override');
-const Review = require('./models/review');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user');
-const Book = require('./models/books')
-
 const userRoutes = require('./routes/users');
 const bookRoutes = require('./routes/book');
-const { isLoggedIn } = require('./middleware');
-
+const reviewRoutes = require('./routes/review');
 
 mongoose.set('strictQuery','false');
 mongoose.connect( 'mongodb://127.0.0.1/book-chor');
@@ -61,33 +56,11 @@ app.use((req,res,next)=>{
 
 app.use('/', userRoutes);
 app.use('/books',bookRoutes);
+app.use('/',reviewRoutes);
 
 app.get('/',(req,res)=>{
     res.render('home');
 });
-
-app.post('/books/:id/reviews', isLoggedIn, catchAsync(async(req,res,next)=>{
-      const book = await Book.findById(req.params.id);
-      const review = new Review(req.body.review);
-      review.author = req.user._id;
-      book.reviews.push(review);
-      await review.save();
-      await book.save();
-      req.flash('success', 'Successfully added a review');
-      res.redirect(`/books/${book._id}`);
-}));
-
-app.delete('/books/:id/reviews/:reviewId', catchAsync(async(req,res,next)=>{
-    const { id, reviewId } = req.params;
-    await Book.findByIdAndUpdate(id, { $pull: {reviews: reviewId}});
-    await Review.findByIdAndDelete(reviewId);
-    req.flash('success', 'Successfully deleted a review');
-    res.redirect(`/books/${id}`);
-}));
-
-// app.all('*', async(req,res,next)=>{
-//     next(new ExpressError('Page Not Found', 404))
-// })
 
 app.use((err, req, res, next)=>{
     const {statusCode=500}=err;
