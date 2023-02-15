@@ -12,7 +12,7 @@ module.exports.postform = async(req,res)=>{
     req.login(registeredUser, err=>{
         if(err) return next(err);
         req.flash('success','Welcome to Book_Chor');
-        res.redirect('/books');
+        res.redirect('/login');
     })
     } 
     catch(e){

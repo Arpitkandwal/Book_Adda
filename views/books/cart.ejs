@@ -1,10 +1,17 @@
 <% layout('layouts/Boilerplate')%>
+<style>
+  .img-fluid {
+    width: 100%;
+    height: 30vw;
+    object-fit: cover;
+}
+</style>
 <h1>Cart</h1>
 <div class="row">
     <div class="col-6 ">
         <div class="card mb-3">
           <div class="embed-respnosive embed-respnosive-4by3">
-            <img src="<%= book.image %>" class="card-img-top embed-respnosive-item" alt="Card image cap">
+            <img src="<%= book.image %>" class="img-fluid" alt="Card image cap">
           </div>
             <div class="card-body">
               <h5 class="card-title"><%= book.title %> </h5>

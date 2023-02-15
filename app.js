@@ -1,3 +1,7 @@
+if(process.env.NODE_EMV !== "production"){
+    require('dotenv').config();
+}
+
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -11,9 +15,12 @@ const User = require('./models/user');
 const userRoutes = require('./routes/users');
 const bookRoutes = require('./routes/book');
 const reviewRoutes = require('./routes/review');
+const MongoDBStore = require("connect-mongo")(session);
+// const dbUrl = process.env.DB_URL;
 
+const dbUrl = 'mongodb://127.0.0.1/book-chor';
 mongoose.set('strictQuery','false');
-mongoose.connect( 'mongodb://127.0.0.1/book-chor');
+mongoose.connect(dbUrl);
 
 const  db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -31,13 +38,50 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 
+const store = new  MongoDBStore({
+    url: dbUrl,
+    secret:'thisshouldbeabettersecret',
+    touchAfter: 24 * 60 * 60
+});
+
+store.on("error", function(e){
+    console.log("session store error", e)
+})
+
 const sessionConfig = {
+    store,
     secret:'thisshouldbeabettersecret',
     resave:false,
-    saveUninitialized:true
+    saveUninitialized:true,
+    cookie:{
+        httpOnly: true,
+        // secure: true,
+        expires:Date.now() + 1000 * 60 * 60 * 24 * 7,
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    }
 }
 app.use(session(sessionConfig));
 app.use(flash());
+// app.use(helmet({contentSecurityPolicy: false}));
+
+// app.use(
+//     helmet.contentSecurityPolicy({
+//         directives:{
+//             defaultSrc: [],
+//             connectSrc:["'self'", ...connectSrcUrls],
+//             scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcurls],
+//             styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+//             workerSrc: ["'self'", "blob:"],
+//             objectSrc:[],
+//             imgSrc: [
+//                 "'self'",
+//                 "blob",
+//                 "data:",
+//             ],
+//             fontSrc: ["'self'", ...fontSrcUrls],
+//         },
+//     })
+// );
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -47,7 +91,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req,res,next)=>{
-    // console.log(req.session);
+    console.log(req.query);
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
