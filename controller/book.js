@@ -42,11 +42,18 @@ module.exports.buybook = async(req,res,next)=>{
 }
 
 module.exports.cart = async(req,res,next)=>{
+    req.flash('error', 'Sorry this feature is not available yet!');
     const Id=req.params.id;
-     const book= await Book.findById(Id);
-     await book.save();
-       res.render('books/cart',{book});
+    const book= await Book.findById(Id).populate('user').populate({
+       path:'reviews',
+        populate:{
+           path:'author'
+       }});
+    res.redirect(`/books/${book._id}`);
+
 }
+
+
 
 module.exports.deletebook = async (req,res)=>{
     const { id } = req.params;
