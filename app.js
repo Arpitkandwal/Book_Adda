@@ -26,7 +26,7 @@ const  db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 // we will wait till mongo is ready before letting the http handler query users:
 db.once('open', function () {
-    console.log('Running');
+    // console.log('Running');
 });
 
 const app = express();
@@ -91,7 +91,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req,res,next)=>{
-    console.log(req.query);
+    // console.log(req.query);
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
